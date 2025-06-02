@@ -18,15 +18,57 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.AUTO) 
 	private Long id;
 	
-	@Column(nullable = false)
+	@Column //(nullable = false)
 	private String nome;
 	
-	@Column(nullable = false, unique = true)
+	@Column //(nullable = false, unique = true)
 	private String email;
-
-	@Column(nullable = false)
-	private double renda; // renda em centavos para que assim não dê problema com números quebrados.
+	
+	@Column //(nullable = false, unique = true)
+	private String senha;
 	
 	@OneToMany(mappedBy = "usuario")
 	Set<Conta> contas = new HashSet<>();
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
+
+	public Set<Conta> getContas() {
+		return contas;
+	}
+
+	public void setContas(Set<Conta> contas) {
+		this.contas = contas;
+	}
+	
+	
 }
