@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.compass.uninassau.entity.Usuario;
@@ -25,8 +26,23 @@ public class CompassController {
 		return "usuário salvo";
 	}
 	
-	@GetMapping("/pegar") 
-	public List<Usuario> getUsuario(@RequestBody String nome, String senha) {
+	@GetMapping("/usuarios") 
+	public List<Usuario> getUsuariosList() {
 		return compassRepository.findAll();
+	}
+	
+	@GetMapping("/verificar_usuario")
+	public Boolean getUsuario(@RequestParam String nome, @RequestParam String senha) {
+		Boolean isUsuario = verifyUser(nome, senha);
+		
+		
+		return isUsuario;
+	}
+	
+	
+	public Boolean verifyUser(String nome, String senha) {
+		List<Usuario> usuario = compassRepository.findByNomeAndSenha(nome, senha);
+		
+		return !usuario.isEmpty();
 	}
 }
