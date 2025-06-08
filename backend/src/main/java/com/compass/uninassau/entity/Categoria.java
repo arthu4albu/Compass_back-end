@@ -39,4 +39,13 @@ public class Categoria {
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
+
+	public Set<Movimento> getMovimentos() {
+		return movimentos;
+	}
+
+	public void setMovimentos(Set<Movimento> movimentos) {
+		this.movimentos = movimentos;
+	}
+	
 }
