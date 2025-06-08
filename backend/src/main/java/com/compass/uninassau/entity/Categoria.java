@@ -47,5 +47,4 @@ public class Categoria {
 	public void setMovimentos(Set<Movimento> movimentos) {
 		this.movimentos = movimentos;
 	}
-	
 }

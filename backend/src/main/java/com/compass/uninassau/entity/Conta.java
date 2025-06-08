@@ -1,5 +1,8 @@
 package com.compass.uninassau.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity 
@@ -33,8 +37,12 @@ public class Conta {
 	}
 	
 	@ManyToOne
-	@JoinColumn(name = "idUsuario")
+	@JoinColumn(name = "idUsuario", nullable = false)
 	private Usuario usuario;
+	
+	@OneToMany(mappedBy = "conta")
+	Set<Movimento> movimentos = new HashSet<>();
+	
 
 	public Long getId() {
 		return id;
@@ -67,6 +75,12 @@ public class Conta {
 	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
 	}
-	
-	
+
+	public Set<Movimento> getMovimentos() {
+		return movimentos;
+	}
+
+	public void setMovimentos(Set<Movimento> movimentos) {
+		this.movimentos = movimentos;
+	}
 }

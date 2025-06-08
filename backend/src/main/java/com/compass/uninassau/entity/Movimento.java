@@ -30,6 +30,10 @@ public class Movimento {
 	@ManyToOne
 	@JoinColumn(name = "idCategoria")
 	private Categoria categoria;
+	
+	@ManyToOne
+	@JoinColumn(name = "idConta", nullable = true)
+	private Conta conta;
 
 	public Long getId() {
 		return id;
@@ -70,6 +74,12 @@ public class Movimento {
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
 	}
-	
-	
+
+	public Conta getConta() {
+		return conta;
+	}
+
+	public void setConta(Conta conta) {
+		this.conta = conta;
+	}
 }
