@@ -1,10 +1,14 @@
 package com.compass.uninassau.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity 
@@ -16,6 +20,9 @@ public class Categoria {
 	
 	@Column(nullable = false, unique = true)
 	private String nome;
+	
+	@OneToMany(mappedBy = "categoria")
+	Set<Movimento> movimentos = new HashSet<>();
 
 	public Long getId() {
 		return id;

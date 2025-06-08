@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity 
@@ -22,11 +24,10 @@ public class Movimento {
 	@Column(nullable = false)
 	private double valor;
 
-	/*
-	
 	@Column(columnDefinition = "CHECK (tipo_movimento IN ('CREDITAR', 'DEBITAR'))")
 	private String tipo_movimento;
-	// falta fazer a parte da FOREIGN KEY porque eu não sei qual é a cardinalidade
 	
-	 */
+	@ManyToOne
+	@JoinColumn(name = "idCategoria")
+	private Categoria categoria;
 }
