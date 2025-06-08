@@ -18,13 +18,13 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.AUTO) 
 	private Long id;
 	
-	@Column //(nullable = false)
+	@Column (nullable = false)
 	private String nome;
 	
-	@Column //(nullable = false, unique = true)
+	@Column (nullable = false, unique = true)
 	private String email;
 	
-	@Column //(nullable = false, unique = true)
+	@Column (nullable = false, unique = true)
 	private String senha;
 	
 	@OneToMany(mappedBy = "usuario")

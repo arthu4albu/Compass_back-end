@@ -22,8 +22,18 @@ public class Conta {
 	@Column(nullable = false)
 	private double renda; // renda em centavos para que assim não dê problema com números quebrados.
 	
+	public Conta(String nome, double renda, Usuario usuario) {
+		this.nome = nome;
+		this.renda = renda;
+		this.usuario = usuario;
+	}
+	
+	public Conta() {
+		
+	}
+	
 	@ManyToOne
-	@JoinColumn(name = "id_usuario")
+	@JoinColumn(name = "idUsuario")
 	private Usuario usuario;
 
 	public Long getId() {

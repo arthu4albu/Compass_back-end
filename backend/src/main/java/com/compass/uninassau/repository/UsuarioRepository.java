@@ -1,10 +1,15 @@
 package com.compass.uninassau.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import com.compass.uninassau.entity.Usuario;
 
-public interface CompassRepository extends JpaRepository<Usuario, Long> {
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	List<Usuario> findByNomeAndSenha(String nome, String senha);
+	Optional<Usuario> findById(Long id);
 }
