@@ -24,7 +24,7 @@ public class Movimento {
 	@Column(nullable = false)
 	private double valor;
 
-	@Column(columnDefinition = "CHECK (tipo_movimento IN ('CREDITAR', 'DEBITAR'))")
+	@Column()
 	private String tipo_movimento;
 	
 	@ManyToOne

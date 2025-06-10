@@ -24,7 +24,7 @@ public class Conta {
 	private String nome;
 	
 	@Column(nullable = false)
-	private double renda; // renda em centavos para que assim não dê problema com números quebrados.
+	private double renda;
 	
 	public Conta(String nome, double renda, Usuario usuario) {
 		this.nome = nome;
