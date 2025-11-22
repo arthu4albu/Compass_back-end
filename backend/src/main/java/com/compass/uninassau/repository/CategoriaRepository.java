@@ -9,6 +9,6 @@ import com.compass.uninassau.entity.Categoria;
 
 
 public interface CategoriaRepository extends JpaRepository<Categoria, Long>{
-	List<Categoria> findByNome(String nome);
+	Optional<Categoria> findByNome(String nome);
 	Optional<Categoria> findById(Long id);
 }

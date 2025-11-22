@@ -184,24 +184,69 @@ public class CompassController {
 	}
 	
 	// CRUD da Categoria e Movimento
+//	@PostMapping("/criar_movimentacao/{idConta}")
+//	public String criarCategoriaEMovimento(@RequestBody WrapperCategoriaMovimento wrapper, @PathVariable Long idConta) {
+//		Optional<Conta> contaOpt = contaRepository.findById(idConta);
+//		
+//		// Se a categoria não existir ainda, será criada uma nova
+//		
+//		
+//		Conta conta = contaOpt.get();
+//		
+//		Categoria categoria = wrapper.getCategoria();
+//		Movimento movimento = wrapper.getMovimento();
+//		
+//		movimento.setCategoria(categoria);
+//		movimento.setConta(conta);
+//		movimento.setData(new Date());
+//		
+//		categoriaRepository.save(categoria);
+//		movimentoRepository.save(movimento);
+//		
+//		
+//		return "Movimento e categoria criados com sucesso";
+//	}
+	
+	
 	@PostMapping("/criar_movimentacao/{idConta}")
-	public String criarCategoriaEMovimento(@RequestBody WrapperCategoriaMovimento wrapper, @PathVariable Long idConta) {
-		Optional<Conta> contaOpt = contaRepository.findById(idConta);
-		Conta conta = contaOpt.get();
-		
-		Categoria categoria = wrapper.getCategoria();
-		Movimento movimento = wrapper.getMovimento();
-		
-		movimento.setCategoria(categoria);
-		movimento.setConta(conta);
-		movimento.setData(new Date());
-		
-		categoriaRepository.save(categoria);
-		movimentoRepository.save(movimento);
-		
-		
-		return "Movimento e categoria criados com sucesso";
+	public String criarCategoriaEMovimento(
+	        @RequestBody WrapperCategoriaMovimento wrapper,
+	        @PathVariable Long idConta) {
+
+	    Conta conta = contaRepository.findById(idConta)
+	            .orElseThrow(() -> new RuntimeException("Conta não encontrada"));
+
+	    Categoria categoriaRequest = wrapper.getCategoria();
+	    Movimento movimento = wrapper.getMovimento();
+
+	    // 🔍 1. Verificar se a categoria já existe no banco (pelo nome)
+	    Optional<Categoria> categoriaExistenteOpt =
+	            categoriaRepository.findByNome(categoriaRequest.getNome());
+
+	    Categoria categoria;
+	    
+	    if (categoriaExistenteOpt.isPresent()) {
+	        // ✔ A categoria já existe → reutiliza
+	        categoria = categoriaExistenteOpt.get();
+	    } else {
+	        // ✔ Não existe → cria nova
+	        categoria = new Categoria();
+	        categoria.setNome(categoriaRequest.getNome());
+	        // categoria.setConta(conta);  // caso sua modelagem use relacionamento
+	        categoriaRepository.save(categoria);
+	    }
+
+	    // 🔗 2. Relacionar movimento com categoria e conta
+	    movimento.setCategoria(categoria);
+	    movimento.setConta(conta);
+	    movimento.setData(new Date());
+
+	    // 💾 3. Salvar movimento
+	    movimentoRepository.save(movimento);
+
+	    return "Movimento e categoria processados com sucesso";
 	}
+
 	
 	@GetMapping("/categorias")
 	public List<Categoria> todasCategorias() {
@@ -215,7 +260,7 @@ public class CompassController {
 		Optional<Categoria> categoriaOpt = categoriaRepository.findById(idCategoria);
 		Categoria categoria = categoriaOpt.get();
 		
-		return new CategoriaDTO(categoria.getId(), categoria.getNome());
+		return new CategoriaDTO(categoria);
 	}
 	
 	@DeleteMapping("deletar_categoria/{idCategoria}")
