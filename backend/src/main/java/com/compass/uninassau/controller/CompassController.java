@@ -281,4 +281,16 @@ public class CompassController {
 		
 		return movimentos;
 	}
+	
+	@GetMapping("/movimentos/mes/{mes}")
+	public List<MovimentoDTO> getMovimentosPorMes(@PathVariable int mes) {
+	    List<Movimento> movimentos = movimentoRepository.buscarPorMes(mes);
+
+	    List<MovimentoDTO> dtos = new ArrayList<>();
+	    for (Movimento m : movimentos) {
+	        dtos.add(new MovimentoDTO(m));
+	    }
+
+	    return dtos;
+	}
 }
