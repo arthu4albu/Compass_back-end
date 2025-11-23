@@ -12,4 +12,5 @@ import com.compass.uninassau.entity.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	List<Usuario> findByNomeAndSenha(String nome, String senha);
 	Optional<Usuario> findById(Long id);
+    Optional<Usuario> findByEmail(String email);
 }
