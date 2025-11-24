@@ -1,11 +1,13 @@
 package com.compass.uninassau.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.compass.uninassau.entity.Categoria;
 import com.compass.uninassau.entity.Conta;
@@ -45,6 +48,7 @@ public class CompassController {
 	// CRUD do Usuário
 	@PostMapping("/cadastrar_usuario")
 	public String cadastarUsuario(@RequestBody Usuario usuario) {
+		usuario.setImagem(null);
 		usuarioRepository.save(usuario);
 		
 		Usuario usuarioFromTable = usuarioRepository.findByNomeAndSenha(usuario.getNome(), usuario.getSenha()).get(0);
@@ -116,6 +120,41 @@ public class CompassController {
 	}
 	
 	
+	
+	// Controle da Imagem salva no banco
+	
+	// Upload de imagem para o banco.
+	@PostMapping(value = "/usuario/{id}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<String> uploadImagem(
+	        @PathVariable Long id,
+	        @RequestParam("file") MultipartFile file) throws IOException {
+
+	    Usuario usuario = usuarioRepository.findById(id)
+	        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+	    usuario.setImagem(file.getBytes());
+	    usuarioRepository.save(usuario);
+
+	    return ResponseEntity.ok("Imagem salva com sucesso!");
+	}
+
+	// Download de imagem 
+	@GetMapping("/usuario/{id}/imagem")
+	public ResponseEntity<byte[]> getImagem(@PathVariable Long id) {
+
+	    Usuario usuario= usuarioRepository.findById(id)
+	        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+	    byte[] imagem = usuario.getImagem();
+	    if (imagem == null) {
+	        return ResponseEntity.notFound().build();
+	    }
+
+	    return ResponseEntity
+	            .ok()
+	            .contentType(MediaType.IMAGE_JPEG) // ou PNG
+	            .body(imagem);
+	}
 	
 	
 	
@@ -276,10 +315,15 @@ public class CompassController {
 	// CRUD do Movimento
 	
 	@GetMapping("/movimentos")
-	public List<Movimento> getMovimentos() {
+	public List<MovimentoDTO> getMovimentos() {
 		List<Movimento> movimentos = movimentoRepository.findAll();
 		
-		return movimentos;
+		List<MovimentoDTO> dtos = new ArrayList<>();
+		for (Movimento m : movimentos) {
+			dtos.add(new MovimentoDTO(m));
+		}
+		
+		return dtos;
 	}
 	
 	@GetMapping("/movimentos/mes/{mes}")
