@@ -33,196 +33,230 @@ import com.compass.uninassau.repository.UsuarioRepository;
 @RestController
 public class CompassController {
 
-	@Autowired
+    @Autowired
     private CategoriaRepository categoriaRepository;
-	
-	@Autowired
+
+    @Autowired
     private MovimentoRepository movimentoRepository;
-    
-	@Autowired
-	private UsuarioRepository usuarioRepository;
-	
-	@Autowired
-	private ContaRepository contaRepository;
 
-	// CRUD do Usuário
-	@PostMapping("/cadastrar_usuario")
-	public String cadastarUsuario(@RequestBody Usuario usuario) {
-		usuario.setImagem(null);
-		usuarioRepository.save(usuario);
-		
-		Usuario usuarioFromTable = usuarioRepository.findByNomeAndSenha(usuario.getNome(), usuario.getSenha()).get(0);
-		Conta conta = new Conta(usuario.getNome(), 0.00, usuarioFromTable);
-		
-		contaRepository.save(conta);
-		return "usuário salvo e conta criada";
-	}
-	
-	@GetMapping("/usuarios") 
-	public List<Usuario> getUsuariosList() {
-		List<Usuario> usuarios = usuarioRepository.findAll();
-		
-		
-		return usuarios;
-	}
-	
-	@GetMapping("/usuario/{idUsuario}") 
-	public UsuarioDTO getUsuario(@PathVariable Long idUsuario) {
-		Usuario usuario = usuarioRepository.findById(idUsuario).get();
-		
-		return new UsuarioDTO(usuario.getNome(), usuario.getEmail());
-	}
-	
-	@PutMapping("/atualizar_usuario/{idUsuario}")
-	public String atualizarUsuario(@PathVariable Long idUsuario, @RequestBody Usuario usuario) {
-		Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
-		Usuario usuarioFromTable = usuarioOpt.get();
-		
-		usuarioFromTable.setNome(usuario.getNome());
-		usuarioFromTable.setEmail(usuario.getEmail());
-		usuarioFromTable.setSenha(usuario.getSenha());
-		
-		usuarioRepository.save(usuarioFromTable);
-		
-		return "Usuario atualizado com sucesso";
-	}
-	
-	@DeleteMapping("/deletar_usuario/{idUsuario}")
-	public String deletarUsuario(@PathVariable Long idUsuario) {
-		Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
-		Usuario usuarioFromTable = usuarioOpt.get();
-		
-		Optional<Conta> contaOpt = contaRepository.findByUsuario(usuarioFromTable);
-		Conta conta = contaOpt.get();
-		
-		
-		contaRepository.delete(conta);
-		usuarioRepository.delete(usuarioFromTable);
-		
-		return "Usuario deletado com sucesso";
-	}
-	
-	@PostMapping("/verificar_usuario")
-	public Long getUsuario(@RequestBody WrapperNomeSenha wrapper) {
-		String nome = wrapper.getNome();
-		String senha = wrapper.getSenha();
-		
-		Long usuarioId = verifyUser(nome, senha).getId();
-		
-		return usuarioId;
-	}
-	
-	public Usuario verifyUser(String nome, String senha) {
-		List<Usuario> usuarioList = usuarioRepository.findByNomeAndSenha(nome, senha);
-		Usuario usuario = usuarioList.get(0);
-		
-		return usuario;
-	}
-	
-	
-	
-	// Controle da Imagem salva no banco
-	
-	// Upload de imagem para o banco.
-	@PostMapping(value = "/usuario/{id}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<String> uploadImagem(
-	        @PathVariable Long id,
-	        @RequestParam("file") MultipartFile file) throws IOException {
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-	    Usuario usuario = usuarioRepository.findById(id)
-	        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    @Autowired
+    private ContaRepository contaRepository;
 
-	    usuario.setImagem(file.getBytes());
-	    usuarioRepository.save(usuario);
+    // CRUD do Usuário
+    @PostMapping("/cadastrar_usuario")
+    public String cadastarUsuario(@RequestBody Usuario usuario) {
 
-	    return ResponseEntity.ok("Imagem salva com sucesso!");
-	}
+        // Ao cadastrar, sempre começa sem imagem
+        usuario.setImagem(null);
 
-	// Download de imagem 
-	@GetMapping("/usuario/{id}/imagem")
-	public ResponseEntity<byte[]> getImagem(@PathVariable Long id) {
+        // Salva o usuário
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
-	    Usuario usuario= usuarioRepository.findById(id)
-	        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-	    byte[] imagem = usuario.getImagem();
-	    if (imagem == null) {
-	        return ResponseEntity.notFound().build();
-	    }
-
-	    return ResponseEntity
-	            .ok()
-	            .contentType(MediaType.IMAGE_JPEG) // ou PNG
-	            .body(imagem);
-	}
-	
-	
-	
-	
-	// CRUD da Conta
-	@PostMapping("/cadastrar_conta/{idUsuario}")
-	public ResponseEntity<String> salvarRenda(@RequestBody Conta conta, @PathVariable Long idUsuario){
-		Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
-		
-		if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Usuário não encontrado.");
-        }
-		
-		conta.setUsuario(usuarioOpt.get());
+        // Cria conta automaticamente
+        Conta conta = new Conta(usuarioSalvo.getNome(), 0.00, usuarioSalvo);
         contaRepository.save(conta);
 
-		return ResponseEntity.ok("Conta criada com sucesso!");
-	}
-	
-	@PutMapping("/atualizar_conta/{idConta}") 
-	public String atualizarRenda(@PathVariable long idConta, @RequestBody Conta conta) {
-		Optional<Conta> contaOpt = contaRepository.findById(idConta);
-		Conta contaFromTable = contaOpt.get();
-		
-		contaFromTable.setNome(conta.getNome());
-		contaFromTable.setRenda(conta.getRenda());
-		
-		contaRepository.save(contaFromTable);
-		
-		return "Conta atualizada";
-	}
-	
-	@GetMapping("/conta/{idConta}")
-	public ContaDTO getConta(@PathVariable Long idConta) {
-		Optional<Conta> contaOpt = contaRepository.findById(idConta);
-		Conta contaFromTable = contaOpt.get();
-		
-		return new ContaDTO(contaFromTable.getId(), contaFromTable.getNome(), contaFromTable.getRenda());
-	}
-	
-	@GetMapping("/conta/por_usuario/{idUsuario}") 
-	public ContaDTO getContaPorUsuario(@PathVariable Long idUsuario) {
-		Usuario usuario = usuarioRepository.findById(idUsuario).get();
-		
-		Optional<Conta> contaOpt = contaRepository.findByUsuario(usuario);
-		Conta conta = contaOpt.get();
-		
-		return new ContaDTO(conta.getId(), conta.getNome(), conta.getRenda());
-	}
-	
-	@GetMapping("/contas")
-	public List<Conta> getContas() {
-		List<Conta> contas = contaRepository.findAll();
-		
-		return contas;
-	}
-	
-	@DeleteMapping("/deletar_conta/{idConta}")
-	public String deletarConta(@PathVariable Long idConta) {
-		Optional<Conta> contaOpt = contaRepository.findById(idConta);
-		Conta contaFromTable = contaOpt.get();
-		
-		contaRepository.delete(contaFromTable);
-		
-		return "Conta deletada com sucesso";
-	}
-	
-	// CRUD da Categoria e Movimento
+        return "usuário salvo e conta criada";
+    }
+
+    @GetMapping("/usuarios")
+    public List<Usuario> getUsuariosList() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+
+
+        return usuarios;
+    }
+
+    @GetMapping("/usuario/{idUsuario}")
+    public UsuarioDTO getUsuario(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        // Converter imagem em Base64
+        String fotoBase64 = null;
+        if (usuario.getImagem() != null) {
+            fotoBase64 = java.util.Base64.getEncoder().encodeToString(usuario.getImagem());
+        }
+
+        return new UsuarioDTO(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getNascimento(),
+                usuario.getTelefone(),
+                fotoBase64
+        );
+    }
+
+    @PutMapping("/atualizar_usuario/{idUsuario}")
+    public ResponseEntity<String> atualizarUsuario(
+            @PathVariable Long idUsuario,
+            @RequestBody AtualizarUsuarioDTO dto) {
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setNascimento(dto.getNascimento());
+        usuario.setTelefone(dto.getTelefone());
+
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok("Usuário atualizado com sucesso");
+    }
+
+
+    @DeleteMapping("/deletar_usuario/{idUsuario}")
+    public String deletarUsuario(@PathVariable Long idUsuario) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
+        Usuario usuarioFromTable = usuarioOpt.get();
+
+        Optional<Conta> contaOpt = contaRepository.findByUsuario(usuarioFromTable);
+        Conta conta = contaOpt.get();
+
+
+        contaRepository.delete(conta);
+        usuarioRepository.delete(usuarioFromTable);
+
+        return "Usuario deletado com sucesso";
+    }
+
+    @PostMapping("/verificar_usuario")
+    public ResponseEntity<?> getUsuario(@RequestBody WrapperNomeSenha wrapper) {
+        String nome = wrapper.getNome();
+        String senha = wrapper.getSenha();
+
+        //login usando a query que NÃO busca imagem
+        Long usuarioId = usuarioRepository.login(nome, senha);
+
+        if (usuarioId == null) {
+            return ResponseEntity.status(401).body("Usuário ou senha inválidos");
+        }
+
+        return ResponseEntity.ok(usuarioId);
+    }
+
+
+//    public Usuario verifyUser(String nome, String senha) {
+//        List<Usuario> usuarioList = usuarioRepository.findByNomeAndSenha(nome, senha);
+//        Usuario usuario = usuarioList.get(0);
+//
+//        return usuario;
+//    }
+
+    // Controle da Imagem salva no banco
+
+    // Upload de imagem para o banco.
+    @PostMapping(value = "/usuario/{id}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadImagem(
+            @PathVariable Long id,
+            @RequestParam("imagem") MultipartFile imagem) throws IOException {
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuario.setImagem(imagem.getBytes());
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok("Imagem salva com sucesso!");
+    }
+
+
+    // Download de imagem
+    @GetMapping("/usuario/{id}/imagem")
+    public ResponseEntity<byte[]> getImagem(@PathVariable Long id) {
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        byte[] imagem = usuario.getImagem();
+        if (imagem == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_JPEG) // ou PNG
+                .body(imagem);
+    }
+
+
+    // CRUD da Conta
+    @PostMapping("/cadastrar_conta/{idUsuario}")
+    public ResponseEntity<String> salvarRenda(@RequestBody Conta conta, @PathVariable Long idUsuario) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
+
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Usuário não encontrado.");
+        }
+
+        conta.setUsuario(usuarioOpt.get());
+        contaRepository.save(conta);
+
+        return ResponseEntity.ok("Conta criada com sucesso!");
+    }
+
+    @PutMapping("/atualizar_conta/{idConta}")
+    public ResponseEntity<String> atualizarRenda(
+            @PathVariable long idConta,
+            @RequestBody AtualizarContaDTO dto) {
+
+        Conta conta = contaRepository.findById(idConta)
+                .orElseThrow(() -> new RuntimeException("Conta não encontrada"));
+
+        if (dto.getNome() != null) {
+            conta.setNome(dto.getNome());
+        }
+
+        if (dto.getRenda() != null) {
+            conta.setRenda(dto.getRenda());
+        }
+
+        contaRepository.save(conta);
+        return ResponseEntity.ok("Conta atualizada");
+    }
+
+
+
+    @GetMapping("/conta/{idConta}")
+    public ContaDTO getConta(@PathVariable Long idConta) {
+        Optional<Conta> contaOpt = contaRepository.findById(idConta);
+        Conta contaFromTable = contaOpt.get();
+
+        return new ContaDTO(contaFromTable.getId(), contaFromTable.getNome(), contaFromTable.getRenda());
+    }
+
+    @GetMapping("/conta/por_usuario/{idUsuario}")
+    public ContaDTO getContaPorUsuario(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).get();
+
+        Optional<Conta> contaOpt = contaRepository.findByUsuario(usuario);
+        Conta conta = contaOpt.get();
+
+        return new ContaDTO(conta.getId(), conta.getNome(), conta.getRenda());
+    }
+
+    @GetMapping("/contas")
+    public List<Conta> getContas() {
+        List<Conta> contas = contaRepository.findAll();
+
+        return contas;
+    }
+
+    @DeleteMapping("/deletar_conta/{idConta}")
+    public String deletarConta(@PathVariable Long idConta) {
+        Optional<Conta> contaOpt = contaRepository.findById(idConta);
+        Conta contaFromTable = contaOpt.get();
+
+        contaRepository.delete(contaFromTable);
+
+        return "Conta deletada com sucesso";
+    }
+
+    // CRUD da Categoria e Movimento
 //	@PostMapping("/criar_movimentacao/{idConta}")
 //	public String criarCategoriaEMovimento(@RequestBody WrapperCategoriaMovimento wrapper, @PathVariable Long idConta) {
 //		Optional<Conta> contaOpt = contaRepository.findById(idConta);
@@ -245,96 +279,96 @@ public class CompassController {
 //		
 //		return "Movimento e categoria criados com sucesso";
 //	}
-	
-	
-	@PostMapping("/criar_movimentacao/{idConta}")
-	public String criarCategoriaEMovimento(
-	        @RequestBody WrapperCategoriaMovimento wrapper,
-	        @PathVariable Long idConta) {
 
-	    Conta conta = contaRepository.findById(idConta)
-	            .orElseThrow(() -> new RuntimeException("Conta não encontrada"));
 
-	    Categoria categoriaRequest = wrapper.getCategoria();
-	    Movimento movimento = wrapper.getMovimento();
+    @PostMapping("/criar_movimentacao/{idConta}")
+    public String criarCategoriaEMovimento(
+            @RequestBody WrapperCategoriaMovimento wrapper,
+            @PathVariable Long idConta) {
 
-	    // 🔍 1. Verificar se a categoria já existe no banco (pelo nome)
-	    Optional<Categoria> categoriaExistenteOpt =
-	            categoriaRepository.findByNome(categoriaRequest.getNome());
+        Conta conta = contaRepository.findById(idConta)
+                .orElseThrow(() -> new RuntimeException("Conta não encontrada"));
 
-	    Categoria categoria;
-	    
-	    if (categoriaExistenteOpt.isPresent()) {
-	        // ✔ A categoria já existe → reutiliza
-	        categoria = categoriaExistenteOpt.get();
-	    } else {
-	        // ✔ Não existe → cria nova
-	        categoria = new Categoria();
-	        categoria.setNome(categoriaRequest.getNome());
-	        // categoria.setConta(conta);  // caso sua modelagem use relacionamento
-	        categoriaRepository.save(categoria);
-	    }
+        Categoria categoriaRequest = wrapper.getCategoria();
+        Movimento movimento = wrapper.getMovimento();
 
-	    // 🔗 2. Relacionar movimento com categoria e conta
-	    movimento.setCategoria(categoria);
-	    movimento.setConta(conta);
-	    movimento.setData(new Date());
+        // 🔍 1. Verificar se a categoria já existe no banco (pelo nome)
+        Optional<Categoria> categoriaExistenteOpt =
+                categoriaRepository.findByNome(categoriaRequest.getNome());
 
-	    // 💾 3. Salvar movimento
-	    movimentoRepository.save(movimento);
+        Categoria categoria;
 
-	    return "Movimento e categoria processados com sucesso";
-	}
+        if (categoriaExistenteOpt.isPresent()) {
+            // ✔ A categoria já existe → reutiliza
+            categoria = categoriaExistenteOpt.get();
+        } else {
+            // ✔ Não existe → cria nova
+            categoria = new Categoria();
+            categoria.setNome(categoriaRequest.getNome());
+            // categoria.setConta(conta);  // caso sua modelagem use relacionamento
+            categoriaRepository.save(categoria);
+        }
 
-	
-	@GetMapping("/categorias")
-	public List<Categoria> todasCategorias() {
-		List<Categoria> categorias = categoriaRepository.findAll();
-		
-		return categorias;
-	}
-	
-	@GetMapping("/categoria/{idCategoria}")
-	public CategoriaDTO pegarCategoria(@PathVariable Long idCategoria) {
-		Optional<Categoria> categoriaOpt = categoriaRepository.findById(idCategoria);
-		Categoria categoria = categoriaOpt.get();
-		
-		return new CategoriaDTO(categoria);
-	}
-	
-	@DeleteMapping("deletar_categoria/{idCategoria}")
-	public String deletarCategora(@PathVariable Long idCategoria) {
-		Optional<Categoria> categoriaOpt = categoriaRepository.findById(idCategoria);
-		Categoria categoriaFromTable = categoriaOpt.get();
-		
-		categoriaRepository.delete(categoriaFromTable);
-		
-		return "Categoria deletada com sucesso";
-	}
-	
-	// CRUD do Movimento
-	
-	@GetMapping("/movimentos")
-	public List<MovimentoDTO> getMovimentos() {
-		List<Movimento> movimentos = movimentoRepository.findAll();
-		
-		List<MovimentoDTO> dtos = new ArrayList<>();
-		for (Movimento m : movimentos) {
-			dtos.add(new MovimentoDTO(m));
-		}
-		
-		return dtos;
-	}
-	
-	@GetMapping("/movimentos/mes/{mes}")
-	public List<MovimentoDTO> getMovimentosPorMes(@PathVariable int mes) {
-	    List<Movimento> movimentos = movimentoRepository.buscarPorMes(mes);
+        // 🔗 2. Relacionar movimento com categoria e conta
+        movimento.setCategoria(categoria);
+        movimento.setConta(conta);
+        movimento.setData(new Date());
 
-	    List<MovimentoDTO> dtos = new ArrayList<>();
-	    for (Movimento m : movimentos) {
-	        dtos.add(new MovimentoDTO(m));
-	    }
+        // 💾 3. Salvar movimento
+        movimentoRepository.save(movimento);
 
-	    return dtos;
-	}
+        return "Movimento e categoria processados com sucesso";
+    }
+
+
+    @GetMapping("/categorias")
+    public List<Categoria> todasCategorias() {
+        List<Categoria> categorias = categoriaRepository.findAll();
+
+        return categorias;
+    }
+
+    @GetMapping("/categoria/{idCategoria}")
+    public CategoriaDTO pegarCategoria(@PathVariable Long idCategoria) {
+        Optional<Categoria> categoriaOpt = categoriaRepository.findById(idCategoria);
+        Categoria categoria = categoriaOpt.get();
+
+        return new CategoriaDTO(categoria);
+    }
+
+    @DeleteMapping("deletar_categoria/{idCategoria}")
+    public String deletarCategora(@PathVariable Long idCategoria) {
+        Optional<Categoria> categoriaOpt = categoriaRepository.findById(idCategoria);
+        Categoria categoriaFromTable = categoriaOpt.get();
+
+        categoriaRepository.delete(categoriaFromTable);
+
+        return "Categoria deletada com sucesso";
+    }
+
+    // CRUD do Movimento
+
+    @GetMapping("/movimentos")
+    public List<MovimentoDTO> getMovimentos() {
+        List<Movimento> movimentos = movimentoRepository.findAll();
+
+        List<MovimentoDTO> dtos = new ArrayList<>();
+        for (Movimento m : movimentos) {
+            dtos.add(new MovimentoDTO(m));
+        }
+
+        return dtos;
+    }
+
+    @GetMapping("/movimentos/mes/{mes}")
+    public List<MovimentoDTO> getMovimentosPorMes(@PathVariable int mes) {
+        List<Movimento> movimentos = movimentoRepository.buscarPorMes(mes);
+
+        List<MovimentoDTO> dtos = new ArrayList<>();
+        for (Movimento m : movimentos) {
+            dtos.add(new MovimentoDTO(m));
+        }
+
+        return dtos;
+    }
 }

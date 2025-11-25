@@ -8,67 +8,109 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Basic;
+import jakarta.persistence.FetchType;
 
-@Entity 
-@Table(name="Usuario")
+@Entity
+@Table(name = "Usuario")
 public class Usuario {
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO) 
-	private Long id;
-	
-	@Column (nullable = false)
-	private String nome;
-	
-	@Column (nullable = false, unique = true)
-	private String email;
-	
-	@Column (nullable = false, unique = true)
-	private String senha;
-	
-	@OneToMany(mappedBy = "usuario")
-	Set<Conta> contas = new HashSet<>();
 
-	public Long getId() {
-		return id;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @Column(nullable = false)
+    private String nome;
 
-	public String getNome() {
-		return nome;
-	}
+    @Column(nullable = false, unique = true)
+    private String email;
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
+    @Column(nullable = false, unique = true)
+    private String senha;
 
-	public String getEmail() {
-		return email;
-	}
+    // data de nascimento
+    @Column(nullable = true)
+    private String nascimento;
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    // telefone
+    @Column(nullable = true)
+    private String telefone;
 
-	public String getSenha() {
-		return senha;
-	}
+    // img
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
+    @Column(columnDefinition = "bytea")
+    private byte[] imagem;
 
-	public void setSenha(String senha) {
-		this.senha = senha;
-	}
+    @OneToMany(mappedBy = "usuario")
+    Set<Conta> contas = new HashSet<>();
 
-	public Set<Conta> getContas() {
-		return contas;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setContas(Set<Conta> contas) {
-		this.contas = contas;
-	}
-	
-	
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    // 📌 Getter/Setter nascimento
+    public String getNascimento() {
+        return nascimento;
+    }
+
+    public void setNascimento(String nascimento) {
+        this.nascimento = nascimento;
+    }
+
+    // 📌 Getter/Setter telefone
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public Set<Conta> getContas() {
+        return contas;
+    }
+
+    public void setContas(Set<Conta> contas) {
+        this.contas = contas;
+    }
+
+    public byte[] getImagem() {
+        return imagem;
+    }
+
+    public void setImagem(byte[] imagem) {
+        this.imagem = imagem;
+    }
 }
