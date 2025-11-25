@@ -47,12 +47,20 @@ public class CompassController {
 
     // CRUD do Usuário
     @PostMapping("/cadastrar_usuario")
-    public String cadastarUsuario(@RequestBody Usuario usuario) {
+    public String cadastarUsuario(@RequestBody CriarUsuarioDTO usuarioDTO) {
 
-        // Ao cadastrar, sempre começa sem imagem
-        usuario.setImagem(null);
 
         // Salva o usuário
+    	Usuario usuario =  new Usuario();
+    	usuario.setNome(usuarioDTO.getNome());
+    	usuario.setEmail(usuarioDTO.getEmail());
+    	usuario.setNascimento(usuarioDTO.getNascimento());
+    	usuario.setTelefone(usuarioDTO.getTelefone());
+    	usuario.setSenha(usuarioDTO.getSenha());
+    	
+        // Ao cadastrar, sempre começa sem imagem
+    	usuario.setImagem(null);
+    	
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
         // Cria conta automaticamente

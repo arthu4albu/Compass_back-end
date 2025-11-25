@@ -40,7 +40,6 @@ public class Usuario {
     private String telefone;
 
     // img
-    @Lob
     @Basic(fetch = FetchType.EAGER)
     @Column(columnDefinition = "bytea")
     private byte[] imagem;
