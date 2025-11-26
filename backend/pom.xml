@@ -65,6 +65,12 @@
     		<artifactId>postgresql</artifactId>
     		<version>42.7.3</version>
 		</dependency>
+		
+		<dependency>
+  1     	<groupId>org.springframework.security</groupId>
+  2     	<artifactId>spring-security-crypto</artifactId>
+  3 	</dependency>
+
 	</dependencies>
 
 	<build>

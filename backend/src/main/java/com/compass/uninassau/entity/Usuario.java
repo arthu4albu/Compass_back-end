@@ -14,10 +14,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Basic;
 import jakarta.persistence.FetchType;
 
+
 @Entity
 @Table(name = "Usuario")
 public class Usuario {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

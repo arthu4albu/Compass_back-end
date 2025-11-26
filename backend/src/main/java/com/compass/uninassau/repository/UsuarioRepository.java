@@ -20,6 +20,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
 
     // login seguro (NÃO busca a imagem)
-    @Query("SELECT u.id FROM Usuario u WHERE u.nome = :nome AND u.senha = :senha")
-    Long login(@Param("nome") String nome, @Param("senha") String senha);
+    @Query("SELECT u.senha FROM Usuario u WHERE u.nome = :nome")
+    String login(@Param("nome") String nome);
+    
+    // Retorna ID do usuário se senha for igual
+    @Query("SELECT u.id FROM Usuario u WHERE u.senha = :senha")
+    Long getIdUsuario(@Param("senha") String senha);
 }

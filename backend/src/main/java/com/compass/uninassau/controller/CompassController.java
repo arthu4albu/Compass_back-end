@@ -1,6 +1,7 @@
 package com.compass.uninassau.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,11 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.compass.uninassau.entity.Categoria;
 import com.compass.uninassau.entity.Conta;
 import com.compass.uninassau.entity.Movimento;
+import com.compass.uninassau.entity.NotificacaoAgendada;
 import com.compass.uninassau.entity.Usuario;
 import com.compass.uninassau.repository.CategoriaRepository;
 import com.compass.uninassau.repository.ContaRepository;
 import com.compass.uninassau.repository.MovimentoRepository;
+import com.compass.uninassau.repository.NotificacaoRepository;
 import com.compass.uninassau.repository.UsuarioRepository;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @CrossOrigin(origins = "http://localhost:8081") // necessário para o cors
 @RestController
@@ -44,6 +49,13 @@ public class CompassController {
 
     @Autowired
     private ContaRepository contaRepository;
+    
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
+
+    // Encoder para criptografar senha com hash.
+ 	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 
     // CRUD do Usuário
     @PostMapping("/cadastrar_usuario")
@@ -56,7 +68,9 @@ public class CompassController {
     	usuario.setEmail(usuarioDTO.getEmail());
     	usuario.setNascimento(usuarioDTO.getNascimento());
     	usuario.setTelefone(usuarioDTO.getTelefone());
-    	usuario.setSenha(usuarioDTO.getSenha());
+    	
+    	// Senha é criptografada antes de entrar no banco.
+    	usuario.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
     	
         // Ao cadastrar, sempre começa sem imagem
     	usuario.setImagem(null);
@@ -138,11 +152,16 @@ public class CompassController {
         String senha = wrapper.getSenha();
 
         //login usando a query que NÃO busca imagem
-        Long usuarioId = usuarioRepository.login(nome, senha);
+        String senhaUsuarioBanco = usuarioRepository.login(nome);
+        
+        boolean isSenhaCorrect = passwordEncoder.matches(senha, senhaUsuarioBanco);
 
-        if (usuarioId == null) {
+        if (isSenhaCorrect == false) {
             return ResponseEntity.status(401).body("Usuário ou senha inválidos");
         }
+        
+        // Pega o ID do usuário se a senha "casar" com a que está no banco
+        Long usuarioId = usuarioRepository.getIdUsuario(senhaUsuarioBanco);
 
         return ResponseEntity.ok(usuarioId);
     }
@@ -378,5 +397,19 @@ public class CompassController {
         }
 
         return dtos;
+    }
+    
+    // Endpoint de Notificações
+    @PostMapping("/notificacoes/agendar")
+    public ResponseEntity<String> agendarNotificacao(@RequestBody NotificacaoDTO dto) {
+        NotificacaoAgendada n = new NotificacaoAgendada();
+        n.setExpoPushToken(dto.getExpoPushToken());
+        n.setTitulo(dto.getTitulo());
+        n.setMensagem(dto.getMensagem());
+        n.setDataHora(dto.getDataHora());
+
+        notificacaoRepository.save(n);
+
+        return ResponseEntity.ok("Notificação agendada com sucesso!");
     }
 }
