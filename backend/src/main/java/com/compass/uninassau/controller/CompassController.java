@@ -32,6 +32,8 @@ import com.compass.uninassau.repository.MovimentoRepository;
 import com.compass.uninassau.repository.NotificacaoRepository;
 import com.compass.uninassau.repository.UsuarioRepository;
 
+import jakarta.validation.Valid;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @CrossOrigin(origins = "http://localhost:8081") // necessário para o cors
@@ -147,9 +149,13 @@ public class CompassController {
     }
 
     @PostMapping("/verificar_usuario")
-    public ResponseEntity<?> getUsuario(@RequestBody WrapperNomeSenha wrapper) {
+    public ResponseEntity<?> getUsuario(@Valid @RequestBody WrapperNomeSenha wrapper) {
         String nome = wrapper.getNome();
         String senha = wrapper.getSenha();
+        
+        if(nome == null || senha == null) {
+        	return ResponseEntity.badRequest().body("Credenciais inválidas");
+        }
 
         //login usando a query que NÃO busca imagem
         String senhaUsuarioBanco = usuarioRepository.login(nome);

@@ -1,7 +1,15 @@
 package com.compass.uninassau.controller;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class WrapperNomeSenha {
+	@NotBlank(message = "Nome é obrigatório")
+	@Size(min = 3, max = 50)
 	private String nome;
+	
+	@NotBlank(message = "Senha é obrigatória")
+	@Size(min = 6, max = 100)
 	private String senha;
 	
 	public String getNome() {
