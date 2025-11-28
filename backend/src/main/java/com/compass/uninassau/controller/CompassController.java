@@ -21,6 +21,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.compass.uninassau.DTOs.AtualizarContaDTO;
+import com.compass.uninassau.DTOs.AtualizarUsuarioDTO;
+import com.compass.uninassau.DTOs.CategoriaDTO;
+import com.compass.uninassau.DTOs.ContaDTO;
+import com.compass.uninassau.DTOs.CriarUsuarioDTO;
+import com.compass.uninassau.DTOs.MovimentoDTO;
+import com.compass.uninassau.DTOs.NotificacaoDTO;
+import com.compass.uninassau.DTOs.UsuarioDTO;
+import com.compass.uninassau.DTOs.WrapperCategoriaMovimento;
+import com.compass.uninassau.DTOs.WrapperNomeSenha;
 import com.compass.uninassau.entity.Categoria;
 import com.compass.uninassau.entity.Conta;
 import com.compass.uninassau.entity.Movimento;

@@ -1,11 +1,10 @@
-package com.compass.uninassau.controller;
+package com.compass.uninassau.DTOs;
 
 import java.util.List;
 
+import com.compass.uninassau.DTOs.MovimentoDTO;
 import com.compass.uninassau.entity.Categoria;
 import com.compass.uninassau.entity.Movimento;
-
-import com.compass.uninassau.controller.MovimentoDTO;
 
 public class CategoriaDTO {
 	private Long id;

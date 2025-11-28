@@ -1,4 +1,4 @@
-package com.compass.uninassau.controller;
+package com.compass.uninassau.DTOs;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

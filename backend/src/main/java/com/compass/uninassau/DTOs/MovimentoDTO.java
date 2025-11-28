@@ -1,4 +1,4 @@
-package com.compass.uninassau.controller;
+package com.compass.uninassau.DTOs;
 
 import java.util.Date;
 

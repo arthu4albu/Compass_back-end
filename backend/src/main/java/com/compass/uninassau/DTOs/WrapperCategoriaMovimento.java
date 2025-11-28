@@ -1,4 +1,4 @@
-package com.compass.uninassau.controller;
+package com.compass.uninassau.DTOs;
 
 import com.compass.uninassau.entity.Categoria;
 import com.compass.uninassau.entity.Movimento;
